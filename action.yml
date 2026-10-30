@@ -1,0 +1,60 @@
+name: 'AI Code Review Bot'
+description: 'AI code review with inline PR comments. Works with Claude, ChatGPT, Gemini, DeepSeek, OpenRouter, Groq, Mistral, xAI, Together, or any OpenAI-compatible API.'
+inputs:
+  api-key:
+    description: 'API key for ANY supported provider. Store it as a repository/environment secret.'
+    required: false
+    default: ''
+  provider:
+    description: 'auto (default; detected from the key/model) | anthropic | openai | gemini | deepseek | openrouter | groq | mistral | xai | together | openai-compatible'
+    required: false
+    default: 'auto'
+  model:
+    description: 'Model ID for the chosen provider. Optional for the main providers, required for groq/mistral/xai/together/openai-compatible.'
+    required: false
+    default: ''
+  base-url:
+    description: 'Override the API base URL, or point at any OpenAI-compatible endpoint (e.g. https://my-host/v1).'
+    required: false
+    default: ''
+  fallback-models:
+    description: 'Comma-separated model IDs (same provider) to try if the main model returns 404.'
+    required: false
+    default: ''
+  # ---- legacy inputs, kept so existing workflows keep working ----
+  openrouter-api-key:
+    description: 'Deprecated: use api-key.'
+    required: false
+    default: ''
+  openrouter-model:
+    description: 'Deprecated: use model.'
+    required: false
+    default: ''
+  groq-api-key:
+    description: 'Deprecated: use api-key.'
+    required: false
+    default: ''
+  gemini-api-key:
+    description: 'Deprecated: use api-key.'
+    required: false
+    default: ''
+  github-token:
+    description: 'Token used to post review comments'
+    required: false
+    default: ${{ github.token }}
+  custom-rules-path:
+    description: 'Path to custom rules file in consumer repo'
+    required: false
+    default: 'customRules'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    CI_PROVIDER: 'github'
+    LLM_API_KEY: ${{ inputs.api-key || inputs.openrouter-api-key || inputs.groq-api-key || inputs.gemini-api-key }}
+    LLM_PROVIDER: ${{ inputs.provider }}
+    LLM_MODEL: ${{ inputs.model || inputs.openrouter-model }}
+    LLM_BASE_URL: ${{ inputs.base-url }}
+    LLM_FALLBACK_MODELS: ${{ inputs.fallback-models }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
+    CUSTOM_RULES_FILE: ${{ inputs.custom-rules-path }}
